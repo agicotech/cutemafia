@@ -1,0 +1,159 @@
+[
+  {
+    "id": "luna",
+    "name": "Луна",
+    "birthDate": "2026-04-18",
+    "color": "Серебристая шиншилла",
+    "breedClass": "Show",
+    "generation": "spring-2026",
+    "status": "Свободна",
+    "description": "Спокойная, тактичная и очень контактная кошечка. Любит быть рядом, но не требует внимания — настоящий компаньон с мягким характером.",
+    "mainPhoto": "/uploads/silver-fold.webp",
+    "featuredVideo": "/uploads/luna-hover.mp4",
+    "media": [
+      {
+        "url": "/uploads/kittens-duo.webp",
+        "mediaType": "image",
+        "name": "Луна с другом"
+      },
+      {
+        "url": "/uploads/golden-straight.webp",
+        "mediaType": "image",
+        "name": "Домашняя фотосессия"
+      }
+    ],
+    "prices": [
+      {
+        "label": "Домашний любимец",
+        "value": "95 000 ₽"
+      },
+      {
+        "label": "В разведение",
+        "value": "по запросу"
+      }
+    ]
+  },
+  {
+    "id": "oliver",
+    "name": "Оливер",
+    "birthDate": "2026-04-18",
+    "color": "Золотой затушёванный",
+    "breedClass": "Breed",
+    "generation": "spring-2026",
+    "status": "Резерв",
+    "description": "Любопытный исследователь с устойчивой психикой и выразительными янтарными глазами. Быстро привыкает к новым людям.",
+    "mainPhoto": "/uploads/golden-straight.webp",
+    "featuredVideo": null,
+    "media": [
+      {
+        "url": "/uploads/kittens-duo.webp",
+        "mediaType": "image",
+        "name": "Оливер дома"
+      }
+    ],
+    "prices": [
+      {
+        "label": "Домашний любимец",
+        "value": "85 000 ₽"
+      }
+    ]
+  },
+  {
+    "id": "theo",
+    "name": "Тео",
+    "birthDate": "2026-04-18",
+    "color": "Голубой",
+    "breedClass": "Show",
+    "generation": "spring-2026",
+    "status": "Свободен",
+    "description": "Уравновешенный мальчик с плотной плюшевой шерстью. Хорошо ладит с детьми и другими животными.",
+    "mainPhoto": "/uploads/kittens-duo.webp",
+    "featuredVideo": null,
+    "media": [
+      {
+        "url": "/uploads/silver-fold.webp",
+        "mediaType": "image",
+        "name": "Портрет"
+      }
+    ],
+    "prices": [
+      {
+        "label": "Домашний любимец",
+        "value": "90 000 ₽"
+      },
+      {
+        "label": "Выставочная карьера",
+        "value": "120 000 ₽"
+      }
+    ]
+  },
+  {
+    "id": "mia",
+    "name": "Миа",
+    "birthDate": "2025-11-03",
+    "color": "Чёрный золотой",
+    "breedClass": "Breed",
+    "generation": "autumn-2025",
+    "status": "В новом доме",
+    "description": "Нежная и деликатная кошечка из третьего поколения Cute mafia. Уже живёт в любящей семье.",
+    "mainPhoto": "/uploads/golden-straight.webp",
+    "featuredVideo": null,
+    "media": [
+      {
+        "url": "/uploads/silver-fold.webp",
+        "mediaType": "image",
+        "name": "Портрет"
+      }
+    ],
+    "prices": [
+      {
+        "label": "Статус",
+        "value": "продана"
+      }
+    ]
+  },
+  {
+    "id": "simba",
+    "name": "Симба",
+    "birthDate": "2025-11-03",
+    "color": "Кремовый",
+    "breedClass": "Pet",
+    "generation": "autumn-2025",
+    "status": "В новом доме",
+    "description": "Смелый, игривый и очень человекоориентированный кот. Выпускник третьего поколения питомника.",
+    "mainPhoto": "/uploads/kittens-duo.webp",
+    "featuredVideo": null,
+    "media": [
+      {
+        "url": "/uploads/golden-straight.webp",
+        "mediaType": "image",
+        "name": "Домашняя фотосессия"
+      }
+    ],
+    "prices": [
+      {
+        "label": "Статус",
+        "value": "продан"
+      }
+    ]
+  },
+  {
+    "id": "kitten-7ebf58c7cf",
+    "name": "Чорт",
+    "birthDate": "2004-01-21",
+    "color": "Сырный",
+    "breedClass": "Pet",
+    "generation": "demo-2004",
+    "status": "Свободен",
+    "description": "Просто чорт",
+    "mainPhoto": "/uploads/212c535ca704473b97948e0f46d8ce54.jpg",
+    "featuredVideo": "/uploads/31cf1904f3944bbd98825425aa613494.mp4",
+    "media": [],
+    "prices": [
+      {
+        "label": "Домашний любимец",
+        "value": "666000"
+      }
+    ]
+  }
+]

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+.DS_Store
+mock-api/.venv/
+mock-api/__pycache__/
+mock-api/uploads/*
+!mock-api/uploads/silver-fold.webp
+!mock-api/uploads/golden-straight.webp
+!mock-api/uploads/kittens-duo.webp
+!mock-api/uploads/luna-hover.mp4
+!mock-api/uploads/31cf1904f3944bbd98825425aa613494.mp4
+!mock-api/uploads/212c535ca704473b97948e0f46d8ce54.jpg

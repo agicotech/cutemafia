@@ -1,0 +1,196 @@
+openapi: 3.1.0
+info:
+  title: Cute mafia API
+  version: 1.0.0
+  description: Контракт каталога котят, загрузки медиа и заявок питомнику.
+servers:
+  - url: http://127.0.0.1:8000
+    description: Локальный mock API
+paths:
+  /api/health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: API доступно
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, const: ok }
+  /api/kittens:
+    get:
+      operationId: listKittens
+      responses:
+        "200":
+          description: Каталог котят
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Kitten" }
+    post:
+      operationId: createKitten
+      security: [{ AdminPassword: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Kitten" }
+      responses:
+        "201":
+          description: Котёнок создан
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Kitten" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /api/kittens/{kittenId}:
+    parameters:
+      - name: kittenId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: getKitten
+      responses:
+        "200":
+          description: Карточка котёнка
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Kitten" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateKitten
+      security: [{ AdminPassword: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Kitten" }
+      responses:
+        "200":
+          description: Карточка обновлена
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Kitten" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteKitten
+      security: [{ AdminPassword: [] }]
+      responses:
+        "204": { description: Котёнок удалён }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/uploads:
+    post:
+      operationId: uploadMedia
+      security: [{ AdminPassword: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Изображение или видео, не более 50 МБ.
+      responses:
+        "201":
+          description: Медиа загружено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaAsset" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "413": { description: Файл слишком большой }
+        "415": { description: Неподдерживаемый тип файла }
+  /api/inquiries:
+    post:
+      operationId: createInquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InquiryInput" }
+      responses:
+        "201":
+          description: Заявка принята
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Inquiry" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+components:
+  securitySchemes:
+    AdminPassword:
+      type: apiKey
+      in: header
+      name: X-Admin-Password
+  responses:
+    Unauthorized:
+      description: Неверный пароль администратора
+    NotFound:
+      description: Объект не найден
+    ValidationError:
+      description: Некорректные входные данные
+  schemas:
+    Price:
+      type: object
+      additionalProperties: false
+      required: [label, value]
+      properties:
+        label: { type: string, minLength: 1, maxLength: 80 }
+        value: { type: string, minLength: 1, maxLength: 80 }
+    MediaAsset:
+      type: object
+      additionalProperties: false
+      required: [url, mediaType]
+      properties:
+        url: { type: string }
+        mediaType: { type: string, enum: [image, video] }
+        name: { type: [string, "null"] }
+    Kitten:
+      type: object
+      additionalProperties: false
+      required: [id, name, birthDate, color, breedClass, generation, status, description, mainPhoto, featuredVideo, media, prices]
+      properties:
+        id: { type: string }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        birthDate: { type: string, format: date }
+        color: { type: string, minLength: 1, maxLength: 120 }
+        breedClass: { type: string, minLength: 1, maxLength: 40 }
+        generation: { type: string, minLength: 1, maxLength: 80 }
+        status: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, minLength: 1, maxLength: 3000 }
+        mainPhoto: { type: string }
+        featuredVideo: { type: [string, "null"] }
+        media:
+          type: array
+          items: { $ref: "#/components/schemas/MediaAsset" }
+        prices:
+          type: array
+          items: { $ref: "#/components/schemas/Price" }
+    InquiryInput:
+      type: object
+      additionalProperties: false
+      required: [name, contact, message, kittenId]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        contact: { type: string, minLength: 3, maxLength: 200 }
+        message: { type: string, minLength: 3, maxLength: 3000 }
+        kittenId: { type: [string, "null"] }
+    Inquiry:
+      allOf:
+        - { $ref: "#/components/schemas/InquiryInput" }
+        - type: object
+          required: [id, status, createdAt]
+          properties:
+            id: { type: string }
+            status: { type: string, const: new }
+            createdAt: { type: string, format: date-time }
