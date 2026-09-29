@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 type price struct {
@@ -107,6 +108,7 @@ func (s *s3Storage) put(ctx context.Context, file *os.File, filename, contentTyp
 		ContentLength: aws.Int64(stat.Size()),
 		ContentType:   aws.String(contentType),
 		CacheControl:  aws.String("public, max-age=31536000, immutable"),
+		ACL:           types.ObjectCannedACLPublicRead,
 	})
 	if err != nil {
 		return mediaAsset{}, err
