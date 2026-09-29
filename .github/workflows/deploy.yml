@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Test and deploy
 
 on:
   push:
@@ -11,41 +11,77 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: production
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: cute_mafia
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: cute_mafia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cute_mafia -d cute_mafia_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Test SQLite and PostgreSQL
+        working-directory: backend
+        env:
+          POSTGRES_TEST_DSN: postgres://cute_mafia:test-password@127.0.0.1:5432/cute_mafia_test?sslmode=disable
+        run: go test ./...
+      - name: Build Linux/amd64
+        run: scripts/build-backend.sh
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 0600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Deploy API with health-check rollback
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: deploy
+        run: |
+          scp dist/cute-mafia-api "$VPS_USER@$VPS_HOST:/tmp/cute-mafia-api.new"
+          ssh "$VPS_USER@$VPS_HOST" sudo /usr/local/sbin/deploy-cute-mafia
+
+  frontend:
+    needs: api
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-      - name: Set up Node
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Prepare static catalog
-        run: |
-          mkdir -p public/api public/uploads
-          cp mock-api/data/kittens.json public/api/kittens.json
-          cp mock-api/uploads/* public/uploads/
-      - name: Build
+      - run: npm ci
+      - name: Build frontend
         run: npm run build
         env:
-          VITE_API_URL: https://cute-mafia.ru
-          VITE_STATIC_CATALOG: "true"
-      - name: Configure Pages
-        uses: actions/configure-pages@v6
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
+          VITE_API_URL: https://api.cute-mafia.ru
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
-      - name: Deploy
+      - name: Deploy frontend
         id: deployment
         uses: actions/deploy-pages@v5

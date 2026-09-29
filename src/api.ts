@@ -15,7 +15,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const mediaUrl = (url: string) => url.startsWith('http') ? url : `${API_URL}${url}`
-export const getKittens = () => request<Kitten[]>(import.meta.env.VITE_STATIC_CATALOG === 'true' ? '/api/kittens.json' : '/api/kittens')
+export const getKittens = () => request<Kitten[]>('/api/kittens')
 const adminHeaders = (password: string) => ({ 'X-Admin-Password': password })
 export const saveKitten = (kitten: Kitten, password: string) => request<Kitten>(`/api/kittens${kitten.id ? `/${kitten.id}` : ''}`, {
   method: kitten.id ? 'PUT' : 'POST',
@@ -26,6 +26,27 @@ export const deleteKitten = (id: string, password: string) => request<void>(`/ap
   method: 'DELETE',
   headers: adminHeaders(password),
 })
+
+export async function optimizeImage(file: File): Promise<File> {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file
+  try {
+    const image = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const scale = Math.min(1, 2560 / Math.max(image.width, image.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.width * scale))
+    canvas.height = Math.max(1, Math.round(image.height * scale))
+    const context = canvas.getContext('2d')
+    if (!context) return file
+    context.drawImage(image, 0, 0, canvas.width, canvas.height)
+    image.close()
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', .82))
+    if (!blob || blob.size >= file.size) return file
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.webp', { type: 'image/webp' })
+  } catch {
+    return file
+  }
+}
+
 export const uploadMedia = async (file: File, password: string) => {
   const body = new FormData()
   body.append('file', file)

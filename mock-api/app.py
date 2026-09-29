@@ -17,7 +17,7 @@ DATA = ROOT / "data"
 UPLOADS = ROOT / "uploads"
 KITTENS_FILE = DATA / "kittens.json"
 INQUIRIES_FILE = DATA / "inquiries.json"
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 ADMIN_PASSWORD = "cutemafia-admin-2026"
 
 DATA.mkdir(exist_ok=True)
@@ -152,7 +152,7 @@ def upload_media(file: UploadFile, _: None = Depends(require_admin)) -> dict:
             if size > MAX_UPLOAD_BYTES:
                 output.close()
                 target.unlink(missing_ok=True)
-                raise HTTPException(413, "Файл больше 50 МБ")
+                raise HTTPException(413, "Файл больше 100 МиБ")
             output.write(chunk)
     return {"url": f"/uploads/{filename}", "mediaType": content_type.split("/", 1)[0], "name": file.filename}
 

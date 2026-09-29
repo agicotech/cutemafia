@@ -4,8 +4,10 @@ info:
   version: 1.0.0
   description: Контракт каталога котят, загрузки медиа и заявок питомнику.
 servers:
+  - url: https://api.cute-mafia.ru
+    description: Production API
   - url: http://127.0.0.1:8000
-    description: Локальный mock API
+    description: Локальный API
 paths:
   /api/health:
     get:
@@ -101,7 +103,7 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: Изображение или видео, не более 50 МБ.
+                  description: Изображение или видео, не более 100 МиБ.
       responses:
         "201":
           description: Медиа загружено

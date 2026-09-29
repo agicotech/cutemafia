@@ -8,4 +8,4 @@ python3 -m venv .venv
 .venv/bin/uvicorn app:app --reload --port 8000
 ```
 
-Данные хранятся в `data/*.json`. Upload endpoint принимает изображения и видео до 50 МБ.
+Данные хранятся в `data/*.json`. Upload endpoint принимает изображения и видео до 100 МиБ.

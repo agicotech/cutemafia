@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { deleteKitten, getKittens, mediaUrl, saveKitten, sendInquiry, uploadMedia } from './api'
+import { deleteKitten, getKittens, mediaUrl, optimizeImage, saveKitten, sendInquiry, uploadMedia } from './api'
 import type { Inquiry, Kitten, MediaAsset, Price } from './types'
 
 const PHONE = '+7 (900) 000-00-00'
@@ -139,7 +139,7 @@ function KittenCard({ kitten, onClick }: { kitten: Kitten; onClick: () => void }
   useEffect(() => stopPreview, [])
 
   return <button className="kitten-card" onClick={onClick} onMouseEnter={startPreview} onMouseLeave={stopPreview} onFocus={startPreview} onBlur={stopPreview}>
-    <img src={mediaUrl(kitten.mainPhoto)} alt="" />
+    <img src={mediaUrl(kitten.mainPhoto)} alt="" loading="lazy" decoding="async" />
     {showVideo && kitten.featuredVideo && <video src={mediaUrl(kitten.featuredVideo)} muted loop playsInline autoPlay />}
     {kitten.featuredVideo && <span className="video-hint">Видео</span>}
     <span className="card-overlay"><span>{kitten.status}</span><strong>{kitten.name}</strong><small>{kitten.color}</small></span>
@@ -149,7 +149,7 @@ function KittenCard({ kitten, onClick }: { kitten: Kitten; onClick: () => void }
 function MediaView({ asset, className = '' }: { asset: MediaAsset; className?: string }) {
   return asset.mediaType === 'video'
     ? <video className={className} src={mediaUrl(asset.url)} controls playsInline autoPlay />
-    : <img className={className} src={mediaUrl(asset.url)} alt={asset.name ?? ''} />
+    : <img className={className} src={mediaUrl(asset.url)} alt={asset.name ?? ''} decoding="async" />
 }
 
 function App() {
@@ -274,8 +274,8 @@ function App() {
   }
 
   const apiPassword = () => {
-    const password = sessionStorage.getItem(API_PASSWORD_KEY) ?? prompt('Пароль mock API')?.trim()
-    if (!password) throw new Error('Для изменения данных нужен пароль mock API')
+    const password = sessionStorage.getItem(API_PASSWORD_KEY) ?? prompt('Пароль администратора')?.trim()
+    if (!password) throw new Error('Для изменения данных нужен пароль администратора')
     sessionStorage.setItem(API_PASSWORD_KEY, password)
     return password
   }
@@ -291,7 +291,8 @@ function App() {
     setNotice('Загружаем медиа…')
     try {
       const password = apiPassword()
-      const assets = await Promise.all([...files].map((file) => uploadMedia(file, password)))
+      const assets: MediaAsset[] = []
+      for (const file of files) assets.push(await uploadMedia(await optimizeImage(file), password))
       setDraft((current) => target === 'main'
         ? { ...current, mainPhoto: assets[0].url }
         : target === 'featured'
@@ -311,7 +312,7 @@ function App() {
       await saveKitten({ ...draft, id: editingId ?? '' }, apiPassword())
       await refresh()
       editKitten()
-      setNotice('Изменения сохранены в mock API')
+      setNotice('Изменения сохранены')
     } catch (error) {
       setNotice(adminError(error, 'Не удалось сохранить'))
     }
@@ -355,7 +356,7 @@ function App() {
 
       <section className="catalog" id="kittens">
         <div className="section-heading reveal"><p className="eyebrow">Наши выпускники и малыши</p><h2>Поколения</h2></div>
-        {loadError && <div className="api-error"><p>Mock API недоступно: {loadError}</p><button className="primary-button" onClick={() => void refresh()}>Повторить</button></div>}
+        {loadError && <div className="api-error"><p>API недоступно: {loadError}</p><button className="primary-button" onClick={() => void refresh()}>Повторить</button></div>}
         {generations.map(([generation, items]) => <section className="generation reveal" key={generation}><div className="generation-title"><span>ID</span><div><h3>Поколение {generation}</h3><p>{items.length} {items.length === 1 ? 'котёнок' : 'котёнка'}</p></div></div><div className="kitten-grid">{items.map((kitten) => <KittenCard kitten={kitten} key={kitten.id} onClick={() => openKitten(kitten)} />)}</div></section>)}
       </section>
 
@@ -377,13 +378,13 @@ function App() {
 
     {selected && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeKitten() }}><article className="kitten-modal" role="dialog" aria-modal="true" aria-labelledby="kitten-name">
       <button className="close" onClick={closeKitten} aria-label="Закрыть">×</button><div className="modal-head"><p className="eyebrow">Поколение {selected.generation}</p><h2 id="kitten-name">{selected.name}</h2><span className="status">{selected.status}</span></div>
-      {activeMedia && <div className="gallery"><MediaView className="main-photo" asset={activeMedia} /><div className="thumbs">{gallery.map((asset, index) => <button className={activeMedia.url === asset.url ? 'active' : ''} key={`${asset.url}-${index}`} onClick={() => setActiveMedia(asset)} aria-label={`${asset.mediaType === 'video' ? 'Видео' : 'Фотография'} ${index + 1}`}>{asset.mediaType === 'video' ? <video src={mediaUrl(asset.url)} muted preload="metadata" /> : <img src={mediaUrl(asset.url)} alt="" />}</button>)}</div></div>}
+      {activeMedia && <div className="gallery"><MediaView className="main-photo" asset={activeMedia} /><div className="thumbs">{gallery.map((asset, index) => <button className={activeMedia.url === asset.url ? 'active' : ''} key={`${asset.url}-${index}`} onClick={() => setActiveMedia(asset)} aria-label={`${asset.mediaType === 'video' ? 'Видео' : 'Фотография'} ${index + 1}`}>{asset.mediaType === 'video' ? <video src={mediaUrl(asset.url)} muted preload="metadata" /> : <img src={mediaUrl(asset.url)} alt="" loading="lazy" decoding="async" />}</button>)}</div></div>}
       <dl className="facts"><div><dt>Дата рождения</dt><dd>{formatDate(selected.birthDate)}</dd></div><div><dt>Окрас</dt><dd>{selected.color}</dd></div><div><dt>Класс</dt><dd>{selected.breedClass}</dd></div></dl><div className="prices">{selected.prices.map((price) => <div key={`${price.label}-${price.value}`}><span>{price.label}</span><strong>{price.value}</strong></div>)}</div><div className="description"><p className="eyebrow">О котёнке</p><p>{selected.description}</p></div><div className="modal-actions"><button className="primary-button kitten-contact" onClick={() => startInquiry(selected)}>Оставить заявку</button><a className="text-button" href={`${WHATSAPP}?text=${encodeURIComponent(`Здравствуйте! Хочу познакомиться с котёнком ${selected.name}.`)}`} target="_blank" rel="noreferrer">Написать в WhatsApp</a></div>
     </article></div>}
     </>}
 
-    {constructorRoute && <div className="builder-shell" aria-labelledby="builder-title"><header><div><p className="eyebrow">Данные из mock API</p><h2 id="builder-title">Конструктор котят</h2></div><div className="admin-actions"><a className="text-button" href="../">На сайт</a></div></header><div className="builder-layout">
-      <aside><button className="primary-button" onClick={() => editKitten()}>+ Добавить котёнка</button><div className="builder-list">{kittens.map((kitten) => <div className={editingId === kitten.id ? 'active' : ''} key={kitten.id}><button onClick={() => editKitten(kitten)}><img src={mediaUrl(kitten.mainPhoto)} alt="" /><span><strong>{kitten.name}</strong><small>Поколение {kitten.generation}</small></span></button><button className="delete" onClick={() => void removeKitten(kitten.id)} aria-label={`Удалить ${kitten.name}`}>×</button></div>)}</div></aside>
+    {constructorRoute && <div className="builder-shell" aria-labelledby="builder-title"><header><div><p className="eyebrow">Данные API</p><h2 id="builder-title">Конструктор котят</h2></div><div className="admin-actions"><a className="text-button" href="../">На сайт</a></div></header><div className="builder-layout">
+      <aside><button className="primary-button" onClick={() => editKitten()}>+ Добавить котёнка</button><div className="builder-list">{kittens.map((kitten) => <div className={editingId === kitten.id ? 'active' : ''} key={kitten.id}><button onClick={() => editKitten(kitten)}><img src={mediaUrl(kitten.mainPhoto)} alt="" loading="lazy" decoding="async" /><span><strong>{kitten.name}</strong><small>Поколение {kitten.generation}</small></span></button><button className="delete" onClick={() => void removeKitten(kitten.id)} aria-label={`Удалить ${kitten.name}`}>×</button></div>)}</div></aside>
       <form onSubmit={submitKitten}><div className="form-title"><h3>{editingId ? `Редактирование: ${draft.name}` : 'Новый котёнок'}</h3>{notice && <span className="notice">{notice}</span>}</div><div className="form-grid">
         <label>Имя<input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></label><label>Дата рождения<input required type="date" value={draft.birthDate} onChange={(e) => setDraft({ ...draft, birthDate: e.target.value })} /></label><label>Окрас<input required value={draft.color} onChange={(e) => setDraft({ ...draft, color: e.target.value })} /></label><label>Класс<select value={draft.breedClass} onChange={(e) => setDraft({ ...draft, breedClass: e.target.value })}><option>Pet</option><option>Breed</option><option>Show</option></select></label><label>ID поколения<input required maxLength={80} placeholder="Например, spring-2026" value={draft.generation} onChange={(e) => setDraft({ ...draft, generation: e.target.value })} /></label><label>Статус<input required value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value })} /></label>
       </div><label>Описание<textarea required rows={5} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /></label>

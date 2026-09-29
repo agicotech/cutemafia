@@ -6,6 +6,7 @@ vite.config.d.ts
 .DS_Store
 mock-api/.venv/
 mock-api/__pycache__/
+backend/config.yaml
 mock-api/uploads/*
 !mock-api/uploads/silver-fold.webp
 !mock-api/uploads/golden-straight.webp

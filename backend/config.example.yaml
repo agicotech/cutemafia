@@ -1,0 +1,36 @@
+server:
+  listen: 127.0.0.1:8000
+  allowed_origins:
+    - https://cute-mafia.ru
+  admin_password: change-me
+
+database:
+  # sqlite or postgres
+  driver: sqlite
+  dsn: /var/lib/cute-mafia/cute-mafia.db
+  # PostgreSQL example:
+  # driver: postgres
+  # dsn: postgres://cute_mafia:password@127.0.0.1/cute_mafia?sslmode=require
+
+storage:
+  endpoint: https://storage.yandexcloud.net
+  region: ru-central1
+  bucket: change-me
+  access_key: change-me
+  secret_key: change-me
+  public_base_url: https://storage.yandexcloud.net/change-me
+  prefix: media/
+
+telegram:
+  enabled: true
+  # Можно переопределить доменом или полным URL Telegram-прокси.
+  api_host: api.telegram.org
+  bot_token: change-me
+  chat_id: change-me
+  poll_interval: 15s
+  retry_delays: [1m, 5m, 30m, 2h, 12h, 24h]
+
+uploads:
+  max_bytes: 104857600
+  gc_interval: 24h
+  gc_min_age: 24h

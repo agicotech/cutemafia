@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "mock-api/.venv/bin/uvicorn app:app --app-dir mock-api --reload --port 8000",
+    "dev:api": "cd backend && go run . -config config.yaml",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
