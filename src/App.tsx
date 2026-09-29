@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { deleteKitten, getKittens, mediaUrl, optimizeImage, saveKitten, sendInquiry, uploadMedia } from './api'
 import type { Inquiry, Kitten, MediaAsset, Price } from './types'
 
-const PHONE = '+7 (900) 000-00-00'
-const PHONE_LINK = '+79000000000'
-const TELEGRAM = 'https://t.me/cutemafia'
-const TELEGRAM_CHANNEL = 'https://t.me/cutemafia_cats'
+const PHONE = '+7 (903) 775-52-80'
+const PHONE_LINK = '+79037755280'
+const TELEGRAM = 'https://t.me/BSvetP'
+const TELEGRAM_CHANNEL = 'https://t.me/tsezar689'
 const INSTAGRAM = 'https://instagram.com/cutemafia'
-const WHATSAPP = 'https://wa.me/79000000000'
+const WHATSAPP = 'https://wa.me/79037755280'
 const API_PASSWORD_KEY = 'cutemafia-api-password'
 
 const emptyKitten = (): Kitten => ({
@@ -466,7 +466,7 @@ function App() {
     {selected && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeKitten() }}><article className="kitten-modal" role="dialog" aria-modal="true" aria-labelledby="kitten-name">
       <button className="close" onClick={closeKitten} aria-label="Закрыть">×</button><div className="modal-head"><p className="eyebrow">Поколение {selected.generation}</p><h2 id="kitten-name">{selected.name}</h2><span className="status">{selected.status}</span></div>
       {activeMedia && <div className="gallery"><MediaView className="main-photo" asset={activeMedia} /><div className="thumbs">{gallery.map((asset, index) => <button className={activeMedia.url === asset.url ? 'active' : ''} key={`${asset.url}-${index}`} onClick={() => setActiveMedia(asset)} aria-label={`${asset.mediaType === 'video' ? 'Видео' : 'Фотография'} ${index + 1}`}>{asset.mediaType === 'video' ? <video src={mediaUrl(asset.url)} muted preload="metadata" /> : <img src={mediaUrl(asset.url)} alt="" loading="lazy" decoding="async" />}</button>)}</div></div>}
-      <dl className="facts"><div><dt>Дата рождения</dt><dd>{formatDate(selected.birthDate)}</dd></div><div><dt>Окрас</dt><dd>{selected.color}</dd></div><div><dt>Класс</dt><dd>{selected.breedClass}</dd></div></dl><div className="prices">{selected.prices.map((price) => <div key={`${price.label}-${price.value}`}><span>{price.label}</span><strong>{price.value}</strong></div>)}</div><div className="description"><p className="eyebrow">О котёнке</p><p>{selected.description}</p></div><div className="modal-actions"><button className="primary-button kitten-contact" onClick={() => startInquiry(selected)}>Оставить заявку</button><a className="text-button" href={`${WHATSAPP}?text=${encodeURIComponent(`Здравствуйте! Хочу познакомиться с котёнком ${selected.name}.`)}`} target="_blank" rel="noreferrer">Написать в WhatsApp</a></div>
+      <dl className="facts"><div><dt>Дата рождения</dt><dd>{formatDate(selected.birthDate)}</dd></div><div><dt>Окрас</dt><dd>{selected.color}</dd></div><div><dt>Класс</dt><dd>{selected.breedClass}</dd></div></dl><div className="prices">{selected.prices.map((price) => <div key={`${price.label}-${price.value}`}><span>{price.label}</span><strong>{price.value}</strong></div>)}</div><div className="description"><p className="eyebrow">О котёнке</p><p>{selected.description}</p></div><div className="modal-actions"><button className="primary-button kitten-contact" onClick={() => startInquiry(selected)}>Оставить заявку</button><a className="text-button" href={TELEGRAM} target="_blank" rel="noreferrer">Написать в Telegram</a></div>
     </article></div>}
     </>}
 
