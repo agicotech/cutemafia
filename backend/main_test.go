@@ -165,6 +165,30 @@ func TestTelegramRetry(t *testing.T) {
 	}
 }
 
+func TestBotGateRequest(t *testing.T) {
+	telegram := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/bots/bot_test/sendMessage" {
+			t.Errorf("path = %q", r.URL.Path)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer bg_live_test" {
+			t.Errorf("authorization = %q", got)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"ok":true}`)
+	}))
+	defer telegram.Close()
+
+	cfg := testConfig("sqlite", ":memory:")
+	cfg.Telegram.APIHost = telegram.URL
+	cfg.Telegram.BotPublicID = "bot_test"
+	cfg.Telegram.APIKey = "bg_live_test"
+	cfg.Telegram.ChatID = "123"
+	app := &application{cfg: cfg, httpClient: telegram.Client()}
+	if err := app.sendTelegram(context.Background(), inquiry{inquiryInput: inquiryInput{Name: "Анна", Contact: "@anna", Message: "Привет"}, ID: "inquiry-test", CreatedAt: nowText()}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestExampleConfig(t *testing.T) {
 	cfg, err := loadConfig("config.example.yaml")
 	if err != nil {

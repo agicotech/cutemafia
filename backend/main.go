@@ -527,11 +527,20 @@ func (a *application) sendTelegram(ctx context.Context, item inquiry) error {
 	payload, _ := json.Marshal(map[string]any{
 		"chat_id": a.cfg.Telegram.ChatID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": true,
 	})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(a.cfg.Telegram.APIHost, "/")+"/bot"+a.cfg.Telegram.BotToken+"/sendMessage", bytes.NewReader(payload))
+	endpoint := strings.TrimRight(a.cfg.Telegram.APIHost, "/")
+	if a.cfg.Telegram.BotPublicID != "" {
+		endpoint += "/bots/" + url.PathEscape(a.cfg.Telegram.BotPublicID) + "/sendMessage"
+	} else {
+		endpoint += "/bot" + a.cfg.Telegram.BotToken + "/sendMessage"
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if a.cfg.Telegram.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+a.cfg.Telegram.APIKey)
+	}
 	response, err := a.httpClient.Do(req)
 	if err != nil {
 		return err

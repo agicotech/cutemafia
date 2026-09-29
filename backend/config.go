@@ -34,6 +34,8 @@ type config struct {
 		Enabled      bool     `yaml:"enabled"`
 		APIHost      string   `yaml:"api_host"`
 		BotToken     string   `yaml:"bot_token"`
+		BotPublicID  string   `yaml:"bot_public_id"`
+		APIKey       string   `yaml:"api_key"`
 		ChatID       string   `yaml:"chat_id"`
 		PollInterval string   `yaml:"poll_interval"`
 		RetryDelays  []string `yaml:"retry_delays"`
@@ -133,8 +135,12 @@ func loadConfig(path string) (config, error) {
 	if cfg.Storage.Bucket == "" || cfg.Storage.AccessKey == "" || cfg.Storage.SecretKey == "" || cfg.Storage.PublicBaseURL == "" {
 		return cfg, errors.New("storage bucket, credentials and public_base_url are required")
 	}
-	if cfg.Telegram.Enabled && (cfg.Telegram.BotToken == "" || cfg.Telegram.ChatID == "") {
-		return cfg, errors.New("telegram bot_token and chat_id are required when enabled")
+	botGate := cfg.Telegram.BotPublicID != "" || cfg.Telegram.APIKey != ""
+	if botGate && (cfg.Telegram.BotPublicID == "" || cfg.Telegram.APIKey == "") {
+		return cfg, errors.New("telegram.bot_public_id and telegram.api_key must be set together")
+	}
+	if cfg.Telegram.Enabled && (cfg.Telegram.ChatID == "" || (!botGate && cfg.Telegram.BotToken == "")) {
+		return cfg, errors.New("telegram.chat_id and either bot_token or BotGate credentials are required when enabled")
 	}
 	return cfg, nil
 }

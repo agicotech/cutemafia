@@ -23,9 +23,11 @@ storage:
 
 telegram:
   enabled: true
-  # Можно переопределить доменом или полным URL Telegram-прокси.
+  # Для BotGate: api_host=https://bot-gate.ru/api/v1, заполните bot_public_id и api_key.
   api_host: api.telegram.org
   bot_token: change-me
+  # bot_public_id: bot_xxxxxxxxxxxx
+  # api_key: bg_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   chat_id: change-me
   poll_interval: 15s
   retry_delays: [1m, 5m, 30m, 2h, 12h, 24h]
