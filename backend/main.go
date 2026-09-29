@@ -21,6 +21,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -521,9 +522,9 @@ func (a *application) sendTelegram(ctx context.Context, item inquiry) error {
 	if parsed, err := time.Parse("2006-01-02T15:04:05.000000000Z", item.CreatedAt); err == nil {
 		createdAt = parsed.In(time.FixedZone("МСК", 3*60*60)).Format("02.01.2006 15:04 МСК")
 	}
-	text := fmt.Sprintf("🐾 <b>Новая заявка Cute Mafia</b>\n\n<b>Имя:</b> %s\n<b>Контакт:</b> <code>%s</code>\n<b>Котёнок:</b> %s\n\n<b>Сообщение:</b>\n%s\n\n<i>%s · %s</i>",
-		html.EscapeString(item.Name), html.EscapeString(item.Contact), kittenID,
-		html.EscapeString(item.Message), html.EscapeString(createdAt), html.EscapeString(item.ID))
+	text := fmt.Sprintf("🐾 <b>Новая заявка Cute Mafia</b>\n\n<b>Имя:</b> %s\n<b>Контакт:</b> %s\n<b>Котёнок:</b> %s\n\n<b>Сообщение:</b>\n%s\n\n<i>%s</i>",
+		html.EscapeString(item.Name), formatTelegramContact(item.Contact), kittenID,
+		html.EscapeString(item.Message), html.EscapeString(createdAt))
 	payload, _ := json.Marshal(map[string]any{
 		"chat_id": a.cfg.Telegram.ChatID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": true,
 	})
@@ -551,6 +552,50 @@ func (a *application) sendTelegram(ctx context.Context, item inquiry) error {
 		return fmt.Errorf("telegram: %s: %s", response.Status, strings.TrimSpace(string(body)))
 	}
 	return nil
+}
+
+func formatTelegramContact(contact string) string {
+	contact = strings.TrimSpace(contact)
+	compact := strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, contact)
+	if isPhone(compact) {
+		return html.EscapeString(compact)
+	}
+	username := strings.TrimPrefix(contact, "@")
+	if isTelegramUsername(username) {
+		return "@" + username
+	}
+	return "<code>" + html.EscapeString(contact) + "</code>"
+}
+
+func isPhone(value string) bool {
+	digits := 0
+	for index, r := range value {
+		switch {
+		case r >= '0' && r <= '9':
+			digits++
+		case r == '+' && index == 0, r == '-', r == '(', r == ')':
+		default:
+			return false
+		}
+	}
+	return digits >= 7 && digits <= 15
+}
+
+func isTelegramUsername(value string) bool {
+	if len(value) == 0 || len(value) > 32 {
+		return false
+	}
+	for _, r := range value {
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '_' {
+			return false
+		}
+	}
+	return true
 }
 
 func (a *application) runGCWorker(ctx context.Context) {

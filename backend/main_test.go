@@ -153,6 +153,9 @@ func TestTelegramRetry(t *testing.T) {
 	if !strings.Contains(telegramText, "&lt;Анна&gt;") || !strings.Contains(telegramText, "Хочу &amp; жду") {
 		t.Fatalf("unsafe Telegram HTML: %s", telegramText)
 	}
+	if strings.Contains(telegramText, item.ID) || !strings.Contains(telegramText, "<b>Контакт:</b> @anna") {
+		t.Fatalf("unexpected Telegram message: %s", telegramText)
+	}
 	if _, err := db.db.Exec("UPDATE inquiries SET notification_next_attempt_at = ? WHERE id = ?", databaseTime(time.Now().Add(-time.Minute)), item.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -186,6 +189,21 @@ func TestBotGateRequest(t *testing.T) {
 	app := &application{cfg: cfg, httpClient: telegram.Client()}
 	if err := app.sendTelegram(context.Background(), inquiry{inquiryInput: inquiryInput{Name: "Анна", Contact: "@anna", Message: "Привет"}, ID: "inquiry-test", CreatedAt: nowText()}); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestFormatTelegramContact(t *testing.T) {
+	tests := map[string]string{
+		"+7 999 123 45 67": "+79991234567",
+		"@cute_mafia":      "@cute_mafia",
+		"cute_mafia":       "@cute_mafia",
+		"пишите в VK":      "<code>пишите в VK</code>",
+		"name@example.com": "<code>name@example.com</code>",
+	}
+	for input, want := range tests {
+		if got := formatTelegramContact(input); got != want {
+			t.Errorf("formatTelegramContact(%q) = %q, want %q", input, got, want)
+		}
 	}
 }
 
