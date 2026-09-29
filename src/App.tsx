@@ -6,7 +6,7 @@ const PHONE = '+7 (903) 775-52-80'
 const PHONE_LINK = '+79037755280'
 const TELEGRAM = 'https://t.me/BSvetP'
 const TELEGRAM_CHANNEL = 'https://t.me/tsezar689'
-const INSTAGRAM = 'https://instagram.com/cutemafia'
+const INSTAGRAM = 'https://instagram.com/tsezar689'
 const WHATSAPP = 'https://wa.me/79037755280'
 const API_PASSWORD_KEY = 'cutemafia-api-password'
 
