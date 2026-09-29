@@ -15,6 +15,7 @@ type config struct {
 	Server struct {
 		Listen         string   `yaml:"listen"`
 		AllowedOrigins []string `yaml:"allowed_origins"`
+		PublicURL      string   `yaml:"public_url"`
 		AdminPassword  string   `yaml:"admin_password"`
 	} `yaml:"server"`
 	Database struct {
@@ -66,6 +67,13 @@ func loadConfig(path string) (config, error) {
 
 	if cfg.Server.Listen == "" {
 		cfg.Server.Listen = "127.0.0.1:8000"
+	}
+	if cfg.Server.PublicURL == "" {
+		cfg.Server.PublicURL = "https://cute-mafia.ru"
+	}
+	publicURL, parseErr := url.Parse(cfg.Server.PublicURL)
+	if parseErr != nil || publicURL.Host == "" || (publicURL.Scheme != "http" && publicURL.Scheme != "https") {
+		return cfg, errors.New("server.public_url must be an HTTP(S) URL")
 	}
 	if cfg.Storage.Endpoint == "" {
 		cfg.Storage.Endpoint = "https://storage.yandexcloud.net"

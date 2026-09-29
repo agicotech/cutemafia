@@ -514,16 +514,27 @@ func (a *application) deliverPending(ctx context.Context) {
 }
 
 func (a *application) sendTelegram(ctx context.Context, item inquiry) error {
-	kittenID := "не выбран"
+	kittenLabel := "не выбран"
 	if item.KittenID != nil && *item.KittenID != "" {
-		kittenID = html.EscapeString(*item.KittenID)
+		kittenItem, err := a.store.getKitten(ctx, *item.KittenID)
+		if errors.Is(err, errNotFound) {
+			kittenLabel = "котёнок удалён"
+		} else if err != nil {
+			return err
+		} else {
+			kittenURL, _ := url.Parse(a.cfg.Server.PublicURL)
+			query := kittenURL.Query()
+			query.Set("kitten", kittenItem.ID)
+			kittenURL.RawQuery = query.Encode()
+			kittenLabel = fmt.Sprintf(`<a href="%s">%s</a>`, html.EscapeString(kittenURL.String()), html.EscapeString(kittenItem.Name))
+		}
 	}
 	createdAt := item.CreatedAt
 	if parsed, err := time.Parse("2006-01-02T15:04:05.000000000Z", item.CreatedAt); err == nil {
 		createdAt = parsed.In(time.FixedZone("МСК", 3*60*60)).Format("02.01.2006 15:04 МСК")
 	}
 	text := fmt.Sprintf("🐾 <b>Новая заявка Cute Mafia</b>\n\n<b>Имя:</b> %s\n<b>Контакт:</b> %s\n<b>Котёнок:</b> %s\n\n<b>Сообщение:</b>\n%s\n\n<i>%s</i>",
-		html.EscapeString(item.Name), formatTelegramContact(item.Contact), kittenID,
+		html.EscapeString(item.Name), formatTelegramContact(item.Contact), kittenLabel,
 		html.EscapeString(item.Message), html.EscapeString(createdAt))
 	payload, _ := json.Marshal(map[string]any{
 		"chat_id": a.cfg.Telegram.ChatID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": true,

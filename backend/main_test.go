@@ -192,6 +192,39 @@ func TestBotGateRequest(t *testing.T) {
 	}
 }
 
+func TestTelegramKittenLink(t *testing.T) {
+	cfg := testConfig("sqlite", ":memory:")
+	cfg.Server.PublicURL = "https://cute-mafia.ru"
+	cfg.Telegram.BotToken = "token"
+	cfg.Telegram.ChatID = "123"
+	db, err := openStore(context.Background(), cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.db.Close()
+	if err := db.createKitten(context.Background(), kitten{ID: "kitten-1", Name: "Луна"}); err != nil {
+		t.Fatal(err)
+	}
+
+	var telegramText string
+	telegram := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload map[string]any
+		json.NewDecoder(r.Body).Decode(&payload)
+		telegramText, _ = payload["text"].(string)
+		io.WriteString(w, `{"ok":true}`)
+	}))
+	defer telegram.Close()
+	cfg.Telegram.APIHost = telegram.URL
+	app := &application{cfg: cfg, store: db, httpClient: telegram.Client()}
+	kittenID := "kitten-1"
+	if err := app.sendTelegram(context.Background(), inquiry{inquiryInput: inquiryInput{Name: "Анна", Contact: "@anna", Message: "Привет", KittenID: &kittenID}, ID: "inquiry-test", CreatedAt: nowText()}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(telegramText, `<a href="https://cute-mafia.ru?kitten=kitten-1">Луна</a>`) {
+		t.Fatalf("kitten link missing: %s", telegramText)
+	}
+}
+
 func TestFormatTelegramContact(t *testing.T) {
 	tests := map[string]string{
 		"+7 999 123 45 67": "+79991234567",
@@ -217,6 +250,9 @@ func TestExampleConfig(t *testing.T) {
 	}
 	if cfg.Telegram.APIHost != "https://api.telegram.org" {
 		t.Fatalf("telegram host = %q", cfg.Telegram.APIHost)
+	}
+	if cfg.Server.PublicURL != "https://cute-mafia.ru" {
+		t.Fatalf("public URL = %q", cfg.Server.PublicURL)
 	}
 }
 

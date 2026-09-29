@@ -2,6 +2,7 @@ server:
   listen: 127.0.0.1:8000
   allowed_origins:
     - https://cute-mafia.ru
+  public_url: https://cute-mafia.ru
   admin_password: change-me
 
 database:
