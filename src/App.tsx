@@ -152,12 +152,42 @@ function MediaView({ asset, className = '' }: { asset: MediaAsset; className?: s
     : <img className={className} src={mediaUrl(asset.url)} alt={asset.name ?? ''} decoding="async" />
 }
 
+type SocialKind = 'telegram' | 'channel' | 'whatsapp' | 'instagram'
+
+function SocialIcon({ kind }: { kind: SocialKind }) {
+  if (kind === 'instagram') return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle className="fill" cx="17.5" cy="6.5" r="1" /></svg>
+  if (kind === 'whatsapp') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.7a8 8 0 0 1-11.9 7L4 20l1.3-4A8 8 0 1 1 20 11.7Z" /><path d="M9 8.5c.2-.5.5-.5.8-.5h.4c.2 0 .4.1.5.4l.8 1.8c.1.3 0 .5-.2.7l-.6.7c.8 1.6 2 2.7 3.7 3.3l.6-.8c.2-.3.5-.3.8-.2l1.8.9c.3.1.4.3.4.6 0 1.1-.7 2-1.7 2.3-1.1.3-2.7-.1-4.4-1.1-2.2-1.3-3.8-3.2-4.5-5.2-.4-1.2-.2-2.2.4-2.9Z" /></svg>
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 17-7-5 16-4-5-3 3 .6-4.4L17 7 9.8 12.7 3 11Z" />{kind === 'channel' && <path d="M5 5.5 2.5 3M4 8H1" />}</svg>
+}
+
+function AboutPage() {
+  return <>
+    <header className="topbar about-topbar">
+      <a className="brand" href="../" aria-label="Cute mafia — на главную"><span className="brand-mark">CM</span><span>Cute mafia</span></a>
+      <nav aria-label="Навигация"><a href="../#kittens">Котята</a><a href="../#contact">Контакты</a></nav>
+    </header>
+    <main className="about-page">
+      <section className="about-hero">
+        <div className="about-copy"><p className="eyebrow">О питомнике</p><h1>Растим характер, а не только породу</h1><p>Cute mafia — домашний питомник шотландских кошек. Мы внимательно относимся к здоровью линий, ранней социализации и тому, чтобы каждый котёнок рос рядом с человеком.</p><p>До переезда малыши знакомятся с обычной домашней жизнью, привыкают к рукам, звукам и общению. Будущим семьям мы честно рассказываем о темпераменте каждого котёнка и остаёмся на связи после переезда.</p></div>
+        <figure className="about-image"><img src="../assets/kittens-duo.webp" alt="Шотландские котята питомника Cute mafia" /><figcaption>Москва · с заботой о каждом малыше</figcaption></figure>
+      </section>
+      <section className="about-values" aria-label="Принципы питомника">
+        <article><span>01</span><h2>Здоровье</h2><p>Ответственно подбираем пары и следим за состоянием кошек и котят.</p></article>
+        <article><span>02</span><h2>Характер</h2><p>Растим малышей дома, чтобы они были спокойными, контактными и доверяли людям.</p></article>
+        <article><span>03</span><h2>Поддержка</h2><p>Помогаем подготовиться к переезду и отвечаем на вопросы новой семьи.</p></article>
+      </section>
+    </main>
+    <footer><span className="brand-mark">CM</span><p>Cute mafia · питомник шотландских кошек</p><p>© {new Date().getFullYear()}</p></footer>
+  </>
+}
+
 function App() {
   const [kittens, setKittens] = useState<Kitten[]>([])
   const [loadError, setLoadError] = useState('')
   const [selected, setSelected] = useState<Kitten | null>(null)
   const [activeMedia, setActiveMedia] = useState<MediaAsset | null>(null)
   const constructorRoute = location.pathname.replace(/\/+$/, '').endsWith('/constructor')
+  const aboutRoute = location.pathname.replace(/\/+$/, '').endsWith('/about')
   const [draft, setDraft] = useState<Kitten>(emptyKitten)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
@@ -342,10 +372,11 @@ function App() {
   }
 
   return <>
-    {!constructorRoute && <>
+    {aboutRoute && <AboutPage />}
+    {!constructorRoute && !aboutRoute && <>
     <header className="topbar">
       <a className="brand" href="#top" aria-label="Cute mafia — на главную"><span className="brand-mark">CM</span><span>Cute mafia</span></a>
-      <nav aria-label="Основная навигация"><a href="#kittens">Котята</a><a href="#contact">Контакты</a></nav>
+      <nav aria-label="Основная навигация"><a href="./about/">О питомнике</a><a href="#kittens">Котята</a><a href="#contact">Контакты</a></nav>
     </header>
 
     <main id="top">
@@ -361,7 +392,7 @@ function App() {
       </section>
 
       <section className="contact reveal" id="contact">
-        <div className="contact-copy"><p className="eyebrow">Давайте знакомиться</p><h2>Расскажите, кого вы ищете</h2><p>Ответим на вопросы о характере, документах и переезде котёнка в новый дом.</p><div className="direct-contacts"><a href={`tel:${PHONE_LINK}`}><small>Позвонить</small><strong>{PHONE}</strong></a><a href={TELEGRAM} target="_blank" rel="noreferrer"><small>Написать</small><strong>Telegram</strong></a><a href={WHATSAPP} target="_blank" rel="noreferrer"><small>Написать</small><strong>WhatsApp</strong></a><a href={INSTAGRAM} target="_blank" rel="noreferrer"><small>Смотреть</small><strong>Instagram</strong></a><a href={TELEGRAM_CHANNEL} target="_blank" rel="noreferrer"><small>Подписаться</small><strong>Telegram-канал</strong></a></div></div>
+        <div className="contact-copy"><p className="eyebrow">Давайте знакомиться</p><h2>Расскажите, кого вы ищете</h2><p>Ответим на вопросы о характере, документах и переезде котёнка в новый дом.</p><div className="direct-contacts"><a href={`tel:${PHONE_LINK}`}><small>Позвонить</small><strong>{PHONE}</strong></a></div><div className="social-links" aria-label="Социальные сети"><a href={TELEGRAM} target="_blank" rel="noreferrer" aria-label="Telegram" title="Telegram"><SocialIcon kind="telegram" /></a><a href={WHATSAPP} target="_blank" rel="noreferrer" aria-label="WhatsApp" title="WhatsApp"><SocialIcon kind="whatsapp" /></a><a href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram"><SocialIcon kind="instagram" /></a><a href={TELEGRAM_CHANNEL} target="_blank" rel="noreferrer" aria-label="Telegram-канал" title="Telegram-канал"><SocialIcon kind="channel" /></a></div></div>
         <form className="contact-form" onSubmit={submitInquiry}>
           <label>Ваше имя<input required minLength={2} value={inquiry.name} onChange={(e) => setInquiry({ ...inquiry, name: e.target.value })} /></label>
           <label>Телефон, Telegram или WhatsApp<input required minLength={3} value={inquiry.contact} onChange={(e) => setInquiry({ ...inquiry, contact: e.target.value })} /></label>

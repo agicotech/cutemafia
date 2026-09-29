@@ -17,7 +17,7 @@ npm run dev:api
 npm run dev
 ```
 
-Frontend доступен на `http://127.0.0.1:5173`, конструктор — на `/constructor/`, API — на `http://127.0.0.1:8000`. Рабочий `backend/config.yaml` содержит секреты и игнорируется Git.
+Frontend доступен на `http://127.0.0.1:5173`, страница питомника — на `/about/`, конструктор — на `/constructor/`, API — на `http://127.0.0.1:8000`. Рабочий `backend/config.yaml` содержит секреты и игнорируется Git.
 
 ## Backend
 
