@@ -72,7 +72,7 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: deploy
         run: |
-          scp dist/cute-mafia-api "$VPS_USER@$VPS_HOST:/tmp/cute-mafia-api.new"
+          scp -O -o BatchMode=yes -o ConnectTimeout=15 dist/cute-mafia-api "$VPS_USER@$VPS_HOST:/tmp/cute-mafia-api.new"
           ssh "$VPS_USER@$VPS_HOST" sudo /usr/local/sbin/deploy-cute-mafia
 
   frontend:
