@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -44,6 +45,16 @@ jobs:
         run: go test ./...
       - name: Build Linux/amd64
         run: scripts/build-backend.sh
+      - name: Compress API binary
+        run: xz -T0 -9 dist/cute-mafia-api
+      - name: Upload API artifact
+        id: api-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cute-mafia-api-${{ github.sha }}
+          path: dist/cute-mafia-api.xz
+          retention-days: 1
+          compression-level: 0
       - name: Check VPS deployment configuration
         id: deploy-config
         env:
@@ -69,12 +80,15 @@ jobs:
       - name: Deploy API with health-check rollback
         if: ${{ steps.deploy-config.outputs.enabled == 'true' }}
         env:
+          ARTIFACT_ID: ${{ steps.api-artifact.outputs.artifact-id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: deploy
         run: |
-          xz -T0 -9 dist/cute-mafia-api
-          scp -O -o BatchMode=yes -o ConnectTimeout=15 dist/cute-mafia-api.xz "$VPS_USER@$VPS_HOST:/tmp/cute-mafia-api.new.xz"
-          ssh "$VPS_USER@$VPS_HOST" 'xz -dc /tmp/cute-mafia-api.new.xz > /tmp/cute-mafia-api.new && chmod 0755 /tmp/cute-mafia-api.new && unlink /tmp/cute-mafia-api.new.xz'
+          artifact_url="https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip"
+          printf 'header = "Authorization: Bearer %s"\nheader = "X-GitHub-Api-Version: 2022-11-28"\n' "$GITHUB_TOKEN" |
+            ssh "$VPS_USER@$VPS_HOST" "curl --fail --silent --show-error --location --config - '$artifact_url' -o /tmp/cute-mafia-api.zip"
+          ssh "$VPS_USER@$VPS_HOST" 'mkdir -p /tmp/cute-mafia-api-artifact && python3 -m zipfile -e /tmp/cute-mafia-api.zip /tmp/cute-mafia-api-artifact && xz -dc /tmp/cute-mafia-api-artifact/cute-mafia-api.xz > /tmp/cute-mafia-api.new && chmod 0755 /tmp/cute-mafia-api.new && unlink /tmp/cute-mafia-api.zip && unlink /tmp/cute-mafia-api-artifact/cute-mafia-api.xz && rmdir /tmp/cute-mafia-api-artifact'
           ssh "$VPS_USER@$VPS_HOST" sudo /usr/local/sbin/deploy-cute-mafia
 
   frontend:
