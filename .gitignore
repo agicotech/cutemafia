@@ -14,3 +14,4 @@ mock-api/uploads/*
 !mock-api/uploads/luna-hover.mp4
 !mock-api/uploads/31cf1904f3944bbd98825425aa613494.mp4
 !mock-api/uploads/212c535ca704473b97948e0f46d8ce54.jpg
+\.local

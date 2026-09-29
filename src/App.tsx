@@ -33,6 +33,7 @@ function PagePets() {
 
     const cat = { x: 24, y: innerHeight * .72, targetX: innerWidth * .55, targetY: innerHeight * .7, tilt: 0, restingUntil: 0, nextRest: performance.now() + 6000, kickAt: 0 }
     const ball = { x: innerWidth * .72, y: scrollY + innerHeight * .76, vx: 0, vy: 0, angle: 0 }
+    const drag = { active: false, pointerId: -1, offsetX: 0, offsetY: 0, lastX: 0, lastY: 0, lastTime: 0 }
     let last = performance.now()
     let previousScrollY = scrollY
     let frame = 0
@@ -41,6 +42,53 @@ function PagePets() {
       cat.targetX = 18 + Math.random() * Math.max(20, innerWidth - 130)
       cat.targetY = innerHeight * (.58 + Math.random() * .25)
     }
+
+    const grabBall = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return
+      const rect = yarn.getBoundingClientRect()
+      drag.active = true
+      drag.pointerId = event.pointerId
+      drag.offsetX = event.clientX - rect.left
+      drag.offsetY = event.clientY - rect.top
+      drag.lastX = ball.x
+      drag.lastY = ball.y
+      drag.lastTime = event.timeStamp
+      ball.vx = 0
+      ball.vy = 0
+      yarn.dataset.dragging = 'true'
+      yarn.setPointerCapture(event.pointerId)
+      event.preventDefault()
+    }
+
+    const dragBall = (event: PointerEvent) => {
+      if (!drag.active || event.pointerId !== drag.pointerId) return
+      const x = event.clientX - drag.offsetX
+      const y = scrollY + event.clientY - drag.offsetY
+      const elapsed = Math.max(8, event.timeStamp - drag.lastTime)
+      ball.vx = Math.max(-35, Math.min(35, (x - drag.lastX) * 16.67 / elapsed))
+      ball.vy = Math.max(-35, Math.min(35, (y - drag.lastY) * 16.67 / elapsed))
+      ball.x = x
+      ball.y = y
+      drag.lastX = x
+      drag.lastY = y
+      drag.lastTime = event.timeStamp
+      event.preventDefault()
+    }
+
+    const releaseBall = (event: PointerEvent) => {
+      if (!drag.active || event.pointerId !== drag.pointerId) return
+      const carry = Math.max(0, 1 - (event.timeStamp - drag.lastTime) / 120)
+      ball.vx *= carry
+      ball.vy *= carry
+      drag.active = false
+      yarn.removeAttribute('data-dragging')
+      if (yarn.hasPointerCapture(event.pointerId)) yarn.releasePointerCapture(event.pointerId)
+    }
+
+    yarn.addEventListener('pointerdown', grabBall)
+    yarn.addEventListener('pointermove', dragBall)
+    yarn.addEventListener('pointerup', releaseBall)
+    yarn.addEventListener('pointercancel', releaseBall)
 
     const animate = (now: number) => {
       const dt = Math.min((now - last) / 16.67, 2)
@@ -73,7 +121,7 @@ function PagePets() {
         kitten.dataset.frame = Math.floor(now / 135) % 2 ? 'run-a' : 'run-b'
         kitten.dataset.facing = dx < 0 ? 'left' : 'right'
 
-        if (ballVisible && now > cat.kickAt && Math.hypot(ball.x - (cat.x + 52), ballScreenY - (cat.y + 44)) < 54) {
+        if (!drag.active && ballVisible && now > cat.kickAt && Math.hypot(ball.x - (cat.x + 52), ballScreenY - (cat.y + 44)) < 54) {
           ball.vx = (dx < 0 ? -1 : 1) * (4.5 + Math.random() * 2.5)
           ball.vy = (Math.random() - .5) * 3
           cat.kickAt = now + 1500
@@ -85,26 +133,28 @@ function PagePets() {
 
       const scrollDelta = scrollY - previousScrollY
       previousScrollY = scrollY
-      ball.x += ball.vx * dt
-      ball.y += ball.vy * dt
-      ball.vx *= Math.pow(.985, dt)
-      ball.vy *= Math.pow(.955, dt)
-      if (ball.x < 12 || ball.x > innerWidth - 38) {
-        ball.x = Math.max(12, Math.min(innerWidth - 38, ball.x))
-        ball.vx *= -.78
+      if (!drag.active) {
+        ball.x += ball.vx * dt
+        ball.y += ball.vy * dt
+        ball.vx *= Math.pow(.985, dt)
+        ball.vy *= Math.pow(.955, dt)
+        if (ball.x < 12 || ball.x > innerWidth - 38) {
+          ball.x = Math.max(12, Math.min(innerWidth - 38, ball.x))
+          ball.vx *= -.78
+        }
+        const viewportTop = scrollY + 12
+        const viewportBottom = scrollY + innerHeight - 38
+        const scrollSpeed = scrollDelta / dt
+        const scrollImpulse = Math.min(22, 3.5 + Math.abs(scrollSpeed) * 1.35)
+        if (ball.y < viewportTop) {
+          ball.y = viewportTop + 1
+          ball.vy = Math.max(Math.abs(ball.vy) * .78, scrollImpulse)
+        } else if (ball.y > viewportBottom) {
+          ball.y = viewportBottom - 1
+          ball.vy = -Math.max(Math.abs(ball.vy) * .78, scrollImpulse)
+        }
+        ball.angle += ball.vx * dt * 2.4
       }
-      const viewportTop = scrollY + 12
-      const viewportBottom = scrollY + innerHeight - 38
-      const scrollSpeed = scrollDelta / dt
-      const scrollImpulse = Math.min(22, 3.5 + Math.abs(scrollSpeed) * 1.35)
-      if (ball.y < viewportTop) {
-        ball.y = viewportTop + 1
-        ball.vy = Math.max(Math.abs(ball.vy) * .78, scrollImpulse)
-      } else if (ball.y > viewportBottom) {
-        ball.y = viewportBottom - 1
-        ball.vy = -Math.max(Math.abs(ball.vy) * .78, scrollImpulse)
-      }
-      ball.angle += ball.vx * dt * 2.4
 
       cat.x = Math.max(8, Math.min(innerWidth - 100, cat.x))
       cat.y = Math.max(70, Math.min(innerHeight - 105, cat.y))
@@ -115,7 +165,13 @@ function PagePets() {
     }
 
     frame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+      yarn.removeEventListener('pointerdown', grabBall)
+      yarn.removeEventListener('pointermove', dragBall)
+      yarn.removeEventListener('pointerup', releaseBall)
+      yarn.removeEventListener('pointercancel', releaseBall)
+    }
   }, [])
 
   return <div className="page-pets" aria-hidden="true">

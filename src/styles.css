@@ -114,7 +114,8 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .roaming-kitten[data-frame='run-b'] span { background-image: url('/assets/kitten-run-b.webp'); }
 .roaming-kitten[data-frame='sit-a'] span { background-image: url('/assets/kitten-sit-a.webp'); animation: kitten-breathe 1.3s ease-in-out infinite alternate; }
 .roaming-kitten[data-frame='sit-b'] span { background-image: url('/assets/kitten-sit-b.webp'); animation: kitten-breathe 1.3s ease-in-out infinite alternate; }
-.rolling-yarn { position: absolute; top: 0; left: 0; width: clamp(22px, 2.2vw, 30px); aspect-ratio: 1; border-radius: 50%; background: repeating-radial-gradient(ellipse at 68% 28%, transparent 0 3px, rgba(255,255,255,.28) 4px 5px), #f2779a; box-shadow: inset -5px -5px 8px rgba(75,40,79,.18), 0 4px 8px rgba(75,40,79,.18); will-change: transform; }
+.rolling-yarn { position: absolute; top: 0; left: 0; width: clamp(22px, 2.2vw, 30px); aspect-ratio: 1; border-radius: 50%; background: repeating-radial-gradient(ellipse at 68% 28%, transparent 0 3px, rgba(255,255,255,.28) 4px 5px), #f2779a; box-shadow: inset -5px -5px 8px rgba(75,40,79,.18), 0 4px 8px rgba(75,40,79,.18); cursor: grab; pointer-events: auto; touch-action: none; will-change: transform; }
+.rolling-yarn[data-dragging] { cursor: grabbing; }
 .rolling-yarn::after { content: ''; position: absolute; width: 24px; height: 10px; top: 22px; left: 17px; border-bottom: 2px solid #f2779a; border-radius: 50%; transform: rotate(18deg); }
 @keyframes kitten-bob { to { transform: translateY(-3px) rotate(-1deg); } }
 @keyframes kitten-breathe { to { transform: translateY(-1px) scale(1.015); } }
