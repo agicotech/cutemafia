@@ -82,6 +82,14 @@ h1 { max-width: 10ch; font-size: clamp(3rem, 5.6vw, 6.7rem); line-height: 1.04; 
 .social-links a:hover { transform: translateY(-3px) rotate(-3deg); background: var(--ink); color: white; }
 .social-links svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .social-links svg .fill { fill: currentColor; stroke: none; }
+.reviews-link { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .9rem; width: min(100%, 23rem); margin-top: 1rem; padding: .9rem 1rem; border: 1px solid rgba(75,40,79,.15); border-radius: 1.2rem; background: rgba(255,255,255,.62); transition: transform .2s, background .2s, box-shadow .2s; }
+.reviews-link:hover { transform: translateY(-2px); background: white; box-shadow: 0 .7rem 1.8rem rgba(75,40,79,.08); }
+.reviews-link > span:nth-child(2) { display: grid; gap: .15rem; }
+.reviews-link small { color: #856c86; font-size: .75rem; font-weight: 700; letter-spacing: .04em; }
+.reviews-link strong { font: 700 1rem Comfortaa, sans-serif; }
+.reviews-icon { display: grid; place-items: center; width: 2.7rem; aspect-ratio: 1; border-radius: 50%; background: var(--ink); color: white; }
+.reviews-icon svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.reviews-arrow { font-size: 1.25rem; }
 .contact-form { display: grid; gap: 1rem; align-self: start; padding: clamp(1.2rem, 3vw, 2rem); border-radius: 1.7rem; background: var(--paper); box-shadow: 0 1.2rem 3rem rgba(75,40,79,.08); }
 .contact-form textarea { margin-top: 0; }
 .contact-form .primary-button { justify-self: start; min-width: 12rem; }
