@@ -16,8 +16,9 @@ import (
 )
 
 var (
-	errNotFound = errors.New("not found")
-	errConflict = errors.New("conflict")
+	errNotFound           = errors.New("not found")
+	errConflict           = errors.New("conflict")
+	errGenerationConflict = errors.New("generation conflict")
 )
 
 type store struct {
@@ -170,6 +171,25 @@ func (s *store) getKitten(ctx context.Context, id string) (kitten, error) {
 		return kitten{}, err
 	}
 	return item, nil
+}
+
+func (s *store) validateGeneration(ctx context.Context, item kitten) error {
+	items, err := s.listKittens(ctx)
+	if err != nil {
+		return err
+	}
+	for _, existing := range items {
+		if existing.ID == item.ID {
+			continue
+		}
+		if existing.Generation == item.Generation && existing.BirthDate != item.BirthDate {
+			return fmt.Errorf("%w: у поколения %s уже указана дата рождения %s", errGenerationConflict, item.Generation, existing.BirthDate)
+		}
+		if existing.BirthDate == item.BirthDate && existing.Generation != item.Generation {
+			return fmt.Errorf("%w: дата рождения %s уже относится к поколению %s", errGenerationConflict, item.BirthDate, existing.Generation)
+		}
+	}
+	return nil
 }
 
 func (s *store) createKitten(ctx context.Context, item kitten) error {

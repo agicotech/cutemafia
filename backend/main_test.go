@@ -68,6 +68,13 @@ func TestAPIContract(t *testing.T) {
 				t.Fatalf("unexpected catalog: %#v", items)
 			}
 
+			response = request(t, server.URL, http.MethodPost, "/api/kittens", strings.Replace(payload, `"birthDate":"2026-01-02"`, `"birthDate":"2026-01-03"`, 1), "secret")
+			assertStatus(t, response, http.StatusConflict)
+			response = request(t, server.URL, http.MethodPost, "/api/kittens", strings.Replace(payload, `"generation":"A"`, `"generation":"B"`, 1), "secret")
+			assertStatus(t, response, http.StatusConflict)
+			response = request(t, server.URL, http.MethodPost, "/api/kittens", payload, "secret")
+			assertStatus(t, response, http.StatusCreated)
+
 			inquiryPayload := `{"name":"Анна","contact":"@anna","message":"Хочу познакомиться","kittenId":"` + created.ID + `"}`
 			response = request(t, server.URL, http.MethodPost, "/api/inquiries", inquiryPayload, "")
 			assertStatus(t, response, http.StatusCreated)

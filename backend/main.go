@@ -254,6 +254,13 @@ func (a *application) createKitten(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
+	if err := a.store.validateGeneration(r.Context(), item); errors.Is(err, errGenerationConflict) {
+		writeError(w, http.StatusConflict, strings.TrimPrefix(err.Error(), errGenerationConflict.Error()+": "))
+		return
+	} else if err != nil {
+		a.serverError(w, err)
+		return
+	}
 	if item.ID == "" {
 		item.ID = "kitten-" + randomID(5)
 	}
@@ -278,6 +285,13 @@ func (a *application) updateKitten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	item.ID = r.PathValue("kittenId")
+	if err := a.store.validateGeneration(r.Context(), item); errors.Is(err, errGenerationConflict) {
+		writeError(w, http.StatusConflict, strings.TrimPrefix(err.Error(), errGenerationConflict.Error()+": "))
+		return
+	} else if err != nil {
+		a.serverError(w, err)
+		return
+	}
 	if err := a.store.updateKitten(r.Context(), item); errors.Is(err, errNotFound) {
 		writeError(w, http.StatusNotFound, "Котёнок не найден")
 		return

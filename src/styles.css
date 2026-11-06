@@ -51,8 +51,7 @@ h1 { max-width: 10ch; font-size: clamp(3rem, 5.6vw, 6.7rem); line-height: 1.04; 
 .section-heading { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 2rem; border-bottom: 1px solid var(--line); }
 .section-heading h2 { font-size: clamp(3.2rem, 7vw, 7rem); line-height: 1; }
 .generation { padding: clamp(3rem, 6vw, 6rem) 0; border-bottom: 1px solid var(--line); }
-.generation-title { display: grid; grid-template-columns: 4.5rem 1fr; gap: 1.4rem; align-items: start; margin-bottom: 2rem; }
-.generation-title > span { color: var(--copper); font-size: .75rem; font-weight: 600; letter-spacing: .12em; }
+.generation-title { margin-bottom: 2rem; }
 .generation-title h3 { font-size: clamp(1.8rem, 3vw, 3.5rem); }
 .generation-title p { margin: .5rem 0 0; color: #66727b; font-size: .85rem; }
 .kitten-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(.65rem, 1.6vw, 1.5rem); }
@@ -237,7 +236,6 @@ button:disabled, input:disabled { cursor: wait; opacity: .55; }
   .catalog { padding-inline: .75rem; }
   .section-heading { display: block; }
   .section-heading .eyebrow { margin-bottom: .8rem; }
-  .generation-title { grid-template-columns: 2.3rem 1fr; }
   .kitten-grid { grid-template-columns: 1fr; }
   .kitten-card { min-height: 31rem; }
   footer { align-items: flex-start; flex-wrap: wrap; }

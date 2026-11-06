@@ -73,6 +73,16 @@ def require_admin(x_admin_password: Optional[str] = Header(None)) -> None:
         raise HTTPException(401, "Неверный пароль")
 
 
+def validate_generation(kittens: list[dict], kitten: dict) -> None:
+    for existing in kittens:
+        if existing["id"] == kitten["id"]:
+            continue
+        if existing["generation"] == kitten["generation"] and existing["birthDate"] != kitten["birthDate"]:
+            raise HTTPException(409, f"У поколения {kitten['generation']} уже указана дата рождения {existing['birthDate']}")
+        if existing["birthDate"] == kitten["birthDate"] and existing["generation"] != kitten["generation"]:
+            raise HTTPException(409, f"Дата рождения {kitten['birthDate']} уже относится к поколению {existing['generation']}")
+
+
 app = FastAPI(title="Cute mafia API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
@@ -108,6 +118,7 @@ def create_kitten(payload: Kitten, _: None = Depends(require_admin)) -> dict:
     kitten["id"] = kitten["id"] or f"kitten-{uuid4().hex[:10]}"
     if any(item["id"] == kitten["id"] for item in kittens):
         raise HTTPException(409, "Такой id уже существует")
+    validate_generation(kittens, kitten)
     kittens.append(kitten)
     write_json(KITTENS_FILE, kittens)
     return kitten
@@ -121,6 +132,7 @@ def update_kitten(kittenId: str, payload: Kitten, _: None = Depends(require_admi
         raise HTTPException(404, "Котёнок не найден")
     kitten = payload.model_dump()
     kitten["id"] = kittenId
+    validate_generation(kittens, kitten)
     kittens[index] = kitten
     write_json(KITTENS_FILE, kittens)
     return kitten
