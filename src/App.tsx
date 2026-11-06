@@ -2,13 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { deleteKitten, getKittens, mediaUrl, optimizeImage, saveKitten, sendInquiry, uploadMedia } from './api'
 import type { Inquiry, Kitten, MediaAsset, Price } from './types'
 
-const PHONE = '+7 (903) 775-52-80'
-const PHONE_LINK = '+79037755280'
-const TELEGRAM = 'https://t.me/BSvetP'
+const PHONE = '+79258581677'
+const PHONE_LINK = '+79258581677'
+const TELEGRAM = 'https://t.me/agicotech'
 const TELEGRAM_CHANNEL = 'https://t.me/tsezar689'
 const INSTAGRAM = 'https://instagram.com/tsezar689'
-const WHATSAPP = 'https://wa.me/79037755280'
+const WHATSAPP = 'https://wa.me/79258581677'
+const YANDEX_MAPS = 'https://yandex.ru/maps/-/CXvvjIlN'
 const API_PASSWORD_KEY = 'cutemafia-api-password'
+const RUN_FRAMES = ['run-a', 'run-b', 'run-c', 'run-d', 'run-e'] as const
+const RUN_FRAME_DURATION = 85
 
 const emptyKitten = (): Kitten => ({
   id: '', name: '', birthDate: '', color: '', breedClass: 'Pet', generation: '',
@@ -118,7 +121,7 @@ function PagePets() {
         desiredTilt = Math.max(-16, Math.min(16, Math.atan2(dy, Math.abs(dx)) * 180 / Math.PI))
         cat.x += dx / distance * speed
         cat.y += dy / distance * speed
-        kitten.dataset.frame = Math.floor(now / 135) % 2 ? 'run-a' : 'run-b'
+        kitten.dataset.frame = RUN_FRAMES[Math.floor(now / RUN_FRAME_DURATION) % RUN_FRAMES.length]
         kitten.dataset.facing = dx < 0 ? 'left' : 'right'
 
         if (!drag.active && ballVisible && now > cat.kickAt && Math.hypot(ball.x - (cat.x + 52), ballScreenY - (cat.y + 44)) < 54) {
@@ -208,11 +211,12 @@ function MediaView({ asset, className = '' }: { asset: MediaAsset; className?: s
     : <img className={className} src={mediaUrl(asset.url)} alt={asset.name ?? ''} decoding="async" />
 }
 
-type SocialKind = 'telegram' | 'channel' | 'whatsapp' | 'instagram'
+type SocialKind = 'telegram' | 'channel' | 'whatsapp' | 'instagram' | 'maps'
 
 function SocialIcon({ kind }: { kind: SocialKind }) {
   if (kind === 'instagram') return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle className="fill" cx="17.5" cy="6.5" r="1" /></svg>
   if (kind === 'whatsapp') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.7a8 8 0 0 1-11.9 7L4 20l1.3-4A8 8 0 1 1 20 11.7Z" /><path d="M9 8.5c.2-.5.5-.5.8-.5h.4c.2 0 .4.1.5.4l.8 1.8c.1.3 0 .5-.2.7l-.6.7c.8 1.6 2 2.7 3.7 3.3l.6-.8c.2-.3.5-.3.8-.2l1.8.9c.3.1.4.3.4.6 0 1.1-.7 2-1.7 2.3-1.1.3-2.7-.1-4.4-1.1-2.2-1.3-3.8-3.2-4.5-5.2-.4-1.2-.2-2.2.4-2.9Z" /></svg>
+  if (kind === 'maps') return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 17-7-5 16-4-5-3 3 .6-4.4L17 7 9.8 12.7 3 11Z" />{kind === 'channel' && <path d="M5 5.5 2.5 3M4 8H1" />}</svg>
 }
 
@@ -224,13 +228,24 @@ function AboutPage() {
     </header>
     <main className="about-page">
       <section className="about-hero">
-        <div className="about-copy"><p className="eyebrow">О питомнике</p><h1>Растим характер, а не только породу</h1><p>Cute mafia — домашний питомник шотландских кошек. Мы внимательно относимся к здоровью линий, ранней социализации и тому, чтобы каждый котёнок рос рядом с человеком.</p><p>До переезда малыши знакомятся с обычной домашней жизнью, привыкают к рукам, звукам и общению. Будущим семьям мы честно рассказываем о темпераменте каждого котёнка и остаёмся на связи после переезда.</p></div>
+        <div className="about-copy"><p className="eyebrow">🐾 Наш питомник</p><h1>Место, где рождается любовь</h1><p><strong>5 лет любви, заботы и преданности шотландским кошкам. 13 поколений очаровательных котят. Сотни счастливых моментов и одна большая история, которая продолжается… ❤️</strong></p></div>
         <figure className="about-image"><img src="../assets/kittens-duo.webp" alt="Шотландские котята питомника Cute mafia" /><figcaption>Москва · с заботой о каждом малыше</figcaption></figure>
       </section>
-      <section className="about-values" aria-label="Принципы питомника">
-        <article><span>01</span><h2>Здоровье</h2><p>Ответственно подбираем пары и следим за состоянием кошек и котят.</p></article>
-        <article><span>02</span><h2>Характер</h2><p>Растим малышей дома, чтобы они были спокойными, контактными и доверяли людям.</p></article>
-        <article><span>03</span><h2>Поддержка</h2><p>Помогаем подготовиться к переезду и отвечаем на вопросы новой семьи.</p></article>
+      <section className="about-story">
+        <div><p className="eyebrow">Наша история</p><h2>От Цезаря и Зои — к большой семье</h2></div>
+        <div className="about-story-copy"><p>Наша история началась 5 лет назад с двух удивительных представителей шотландской породы — <strong>Цезаря и Зои</strong>, великолепных кошек выставочного класса, которые стали основателями нашего питомника и подарили нам любовь к этим невероятно красивым, ласковым и благородным созданиям.</p><p>С тех пор наш питомник вырос, и сегодня за нашими плечами уже <strong>13 поколений котят</strong>, каждый из которых — маленькая гордость и частичка нашей души.</p><blockquote>🏡 Мы не просто разводим породистых кошек — мы растим настоящих членов семьи.</blockquote><p>Наши малыши появляются на свет и растут в уютной домашней атмосфере, окружённые вниманием, нежностью и ежедневной заботой. Мы уделяем особое внимание каждому этапу их развития: от первых неуверенных шагов до момента встречи с любящей семьёй.</p><p><strong>В основе нашего подхода — здоровье, правильное развитие и счастливое детство каждого котёнка.</strong></p></div>
+      </section>
+      <section className="about-principles" aria-label="Принципы питомника">
+        <div className="about-principles-heading"><p className="eyebrow">Забота каждый день</p><h2>Как растут наши котята</h2></div>
+        <div className="about-principles-grid">
+          <article><span>🌿</span><h3>Натуральное и сбалансированное питание</h3><p>Мы заботимся о качестве рациона наших питомцев, отдавая предпочтение натуральным кормам и полноценному питанию для гармоничного роста и развития.</p></article>
+          <article><span>💕</span><h3>Любовь и социализация с первых дней</h3><p>Наши котята растут рядом с людьми, привыкают к человеческим рукам, голосам, ласке и общению. Они доверчивые, любознательные, нежные и с удовольствием принимают внимание.</p></article>
+          <article><span>🐾</span><h3>Воспитание и хорошие манеры</h3><p>К моменту переезда в новый дом малыши уже приучены к лотку, знакомы с когтеточкой, привычными домашними звуками и повседневным уходом.</p></article>
+          <article><span>👑</span><h3>Породная красота и благородство</h3><p>Мы бережно сохраняем лучшие качества шотландских кошек: выразительные круглые глазки, плюшевую шёрстку, очаровательную внешность и мягкий, дружелюбный характер.</p></article>
+        </div>
+      </section>
+      <section className="about-closing">
+        <p><strong>Для нас каждый котёнок — не просто породистый малыш, а маленькая личность со своим характером, привычками и неповторимым обаянием.</strong></p><p>Мы верим, что счастливые кошки вырастают там, где их по-настоящему любят. Поэтому вкладываем в наших малышей не только знания и многолетний опыт, но и самое главное — своё сердце.</p><p><strong>Наш питомник — это 5 лет истории, 13 поколений маленького счастья и бесконечная любовь к шотландским кошкам.</strong></p><p className="about-closing-note"><em>Возможно, именно здесь вас ждёт ваш будущий пушистый член семьи. 🐱❤️</em></p>
       </section>
     </main>
     <footer><span className="brand-mark">CM</span><p>Cute mafia · питомник шотландских кошек</p><p>© {new Date().getFullYear()}</p></footer>
@@ -438,7 +453,7 @@ function App() {
     <main id="top">
       <section className="story reveal">
         <div className="story-copy"><p className="eyebrow">Питомник шотландских кошек · Москва</p><h1>Семья начинается с мурчания</h1><p className="lead">Cute mafia началась с одной маленькой шотландской кошки и большой любви к её характеру. Мы бережно растим малышей, следим за здоровьем линий и знаем привычки каждого котёнка ещё до вашей первой встречи.</p><a className="round-link" href="#kittens">Познакомиться с котятами <span>↓</span></a></div>
-        <figure className="story-image"><img src={`${import.meta.env.BASE_URL}assets/kittens-duo.webp`} alt="Два шотландских котёнка Cute mafia" /><figcaption><span>04</span> поколения нашей котомафии</figcaption></figure>
+        <figure className="story-image"><img src={`${import.meta.env.BASE_URL}assets/home-kittens.webp`} alt="Два шотландских котёнка на мягкой лежанке" /><figcaption><span>13</span> поколений нашей котомафии</figcaption></figure>
       </section>
 
       <section className="catalog" id="kittens">
@@ -448,7 +463,7 @@ function App() {
       </section>
 
       <section className="contact reveal" id="contact">
-        <div className="contact-copy"><p className="eyebrow">Давайте знакомиться</p><h2>Расскажите, кого вы ищете</h2><p>Ответим на вопросы о характере, документах и переезде котёнка в новый дом.</p><div className="direct-contacts"><a href={`tel:${PHONE_LINK}`}><small>Позвонить</small><strong>{PHONE}</strong></a></div><div className="social-links" aria-label="Социальные сети"><a href={TELEGRAM} target="_blank" rel="noreferrer" aria-label="Telegram" title="Telegram"><SocialIcon kind="telegram" /></a><a href={WHATSAPP} target="_blank" rel="noreferrer" aria-label="WhatsApp" title="WhatsApp"><SocialIcon kind="whatsapp" /></a><a href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram"><SocialIcon kind="instagram" /></a><a href={TELEGRAM_CHANNEL} target="_blank" rel="noreferrer" aria-label="Telegram-канал" title="Telegram-канал"><SocialIcon kind="channel" /></a></div></div>
+        <div className="contact-copy"><p className="eyebrow">Давайте знакомиться</p><h2>Расскажите, кого вы ищете</h2><p>Ответим на вопросы о характере, документах и переезде котёнка в новый дом.</p><div className="direct-contacts"><a href={`tel:${PHONE_LINK}`}><small>Позвонить</small><strong>{PHONE}</strong></a></div><div className="social-links" aria-label="Социальные сети и адрес"><a href={TELEGRAM} target="_blank" rel="noreferrer" aria-label="Telegram" title="Telegram"><SocialIcon kind="telegram" /></a><a href={WHATSAPP} target="_blank" rel="noreferrer" aria-label="WhatsApp" title="WhatsApp"><SocialIcon kind="whatsapp" /></a><a href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label="Instagram" title="Instagram"><SocialIcon kind="instagram" /></a><a href={TELEGRAM_CHANNEL} target="_blank" rel="noreferrer" aria-label="Telegram-канал" title="Telegram-канал"><SocialIcon kind="channel" /></a><a href={YANDEX_MAPS} target="_blank" rel="noreferrer" aria-label="Яндекс Карты" title="Яндекс Карты"><SocialIcon kind="maps" /></a></div></div>
         <form className="contact-form" onSubmit={submitInquiry}>
           <label>Ваше имя<input required minLength={2} value={inquiry.name} onChange={(e) => setInquiry({ ...inquiry, name: e.target.value })} /></label>
           <label>Телефон, Telegram или WhatsApp<input required minLength={3} value={inquiry.contact} onChange={(e) => setInquiry({ ...inquiry, contact: e.target.value })} /></label>
